@@ -7,16 +7,32 @@ let repl: MongoMemoryReplSet | undefined;
 
 /** In-memory single-node replica set (needed for multi-document transactions). */
 export async function startTestDb() {
+  if (repl) {
+    await disconnectDb();
+    await repl.stop();
+    repl = undefined;
+  }
+
   repl = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
   await connectDb(repl.getUri());
-  await Promise.all(Object.values(mongoose.models).map((m) => m.init())); // build indexes (unique constraints)
+
+  // Build indexes / unique constraints for every registered model.
+  await Promise.all(
+    mongoose.modelNames().map((modelName) => mongoose.model(modelName).init())
+  );
 }
 
 export async function stopTestDb() {
   await disconnectDb();
-  await repl?.stop();
+
+  if (repl) {
+    await repl.stop();
+    repl = undefined;
+  }
 }
 
 export async function clearDb() {
-  await Promise.all(Object.values(mongoose.models).map((m) => m.deleteMany({})));
+  await Promise.all(
+    mongoose.modelNames().map((modelName) => mongoose.model(modelName).deleteMany({}))
+  );
 }
