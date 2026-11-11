@@ -3,6 +3,9 @@
 _Last updated: 2026-11-11 (Phase 10)_
 
 ## Current Phase
+**Phase 11 — Deployment: in progress (started 2026-11-12), NOT complete.** Code/config done and pushed (Vercel: website + API function, `vercel.json`, daily cron, CI workflow, smoke test, `DEPLOY.md`, `RUNBOOK.md`). Blocked on owner actions: Atlas database, Vercel environment variables, first seed, a Ready deployment (the live URL still returns Vercel 500 `MIDDLEWARE_INVOCATION_FAILED`; first build failed because Vercel auto-detected Express — fixed with `"framework": null`, new build result not yet seen). Previous: Phase 10 verified.
+
+(Phase 10 text follows.)
 **Phase 10 — Testing & security: implemented and verified; awaiting owner review/approval.** Phase 11 (deployment) has not been started. See `SECURITY_REVIEW.md` (Spec §14 item by item) and `TESTING.md` (Spec §17 map, commands, results).
 
 ## Completed (verified)
@@ -174,6 +177,7 @@ Not deployed. No production services configured.
 See PROJECT_SPECIFICATION.md §22. Still needed: ingredient lists, business email/address, original logo file, whether the "100% organic" claim and the label model photo may be used, current packaging version, whether comb can be sold alone, combo end date/limit.
 
 ## Decisions Log
+- 2026-11-12 (Phase 11): single Vercel project serves the website and the API (serverless function, same domain → no CORS/cookie issues) instead of a separate Render/Railway server — chosen by the owner ("deploy on vercel"). Trade-offs documented in `DEPLOY.md` (per-instance rate limits, daily cron on free plan, cold starts). Free Atlas M0 has no backups → owner approval needed for M10+ or manual dumps (`RUNBOOK.md`).
 - 2026-11-11 (owner request): delivery zones are now **Inside Rangpur ৳60 / Outside Rangpur ৳120** (replacing Dhaka; zone keys `inside_rangpur`/`outside_rangpur`; the live dev database was updated, owner can still edit in Admin → Website). Combo ৳999 with free delivery all over Bangladesh (unchanged). Landing page gained an **order section** (`#order`): pick products, then fill the same checkout form on the page and place the order (COD / manual payments), with server-side pricing. The form was extracted to `components/shop/CheckoutForm.tsx` and is shared with `/checkout`. Test: `scripts/e2e-inline-order.mjs`.
 - 2026-11-11 (Phase 10): website CSP forbids inline script and eval (styles allow inline because React sets style attributes); Zod JIT disabled app-wide; access/error logs scrub phones, emails, tokens and JWTs; every API response is `no-store` unless a route sets its own short cache; production boot refuses unsafe config; test runner uses its own API port; vitest pinned to `src/**/*.test.*` (v4 no longer ignores `dist`) and tests are excluded from the production server build; `sharp`/`vitest` upgraded for audit; residual moderate `minimatch` (dev-only) accepted.
 - 2026-11-11 (Phase 9): no prerender dependency (baseline static tags + client-side meta/JSON-LD; revisit at deployment); policies are drafts until the owner confirms; policies shown in English only; cookie banner appears only when tracking IDs exist; `purchase` = customer views an accepted order (WhatsApp-confirmation workflow) — server-side Conversions API deferred (needs token/approval); gtag shim is a separate same-origin file (lint forbids `arguments`; also CSP-friendly).
