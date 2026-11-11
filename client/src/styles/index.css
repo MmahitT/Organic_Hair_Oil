@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; scroll-padding-top: 5.5rem; }
+  body {
+    @apply bg-cream font-body text-charcoal antialiased;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  html[lang='bn'] body,
+  html[lang='bn'] .font-heading { font-family: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif; }
+  h1, h2, h3 { @apply font-heading text-forest; }
+  html[lang='bn'] [class*='tracking-'] { letter-spacing: normal; }
+  :focus-visible { @apply outline-2 outline-offset-2 outline-forest; outline-style: solid; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+}
+
+@layer components {
+  .container-page { @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8; }
+  .section-pad { @apply py-14 sm:py-20; }
+  .leaf-bg {
+    background-image: radial-gradient(circle at 10% 20%, rgba(168,185,154,0.25) 0, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(198,164,106,0.15) 0, transparent 45%);
+  }
+}

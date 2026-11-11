@@ -1,0 +1,27 @@
+// Verifies role-based admin UI: a "staff" account sees Inventory only. Needs the stack running + superadmin creds.
+import { chromium } from 'playwright-core';
+const site = process.argv[2] ?? 'http://localhost:4173';
+const { ADMIN_EMAIL, ADMIN_PW } = process.env;
+const call = async (path, opts = {}) => (await fetch(site + '/api/v1' + path, { ...opts, headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(opts.headers ?? {}) } }));
+const login = await (await call('/auth/admin/login', { method: 'POST', body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PW }) })).json();
+const staffEmail = `staff${Date.now()}@example.com`;
+const created = await call('/admin/staff', { method: 'POST', headers: { Authorization: `Bearer ${login.data.accessToken}` }, body: JSON.stringify({ name: 'Test Staff', email: staffEmail, password: 'Staff-Pass-12345', role: 'staff' }) });
+let failed = 0; const check = (n, ok) => { console.log(ok ? 'PASS' : 'FAIL', n); if (!ok) failed++; };
+check('superadmin created a staff account', created.status === 201);
+const b = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
+const page = await (await b.newContext()).newPage();
+await page.goto(site + '/admin/login');
+await page.getByLabel('Email').fill(staffEmail); await page.getByLabel('Password').fill('Staff-Pass-12345');
+await page.getByRole('button', { name: 'Sign in' }).click();
+await page.waitForURL('**/admin/orders');
+check('staff lands on Orders', true);
+check('staff nav has Orders + Inventory but no Products or Ingredients', (await page.getByRole('link', { name: 'Inventory' }).count()) === 1 && (await page.getByRole('link', { name: 'Products', exact: true }).count()) === 0 && (await page.getByRole('link', { name: 'Ingredients' }).count()) === 0);
+await page.goto(site + '/admin/products'); await page.waitForURL('**/admin/orders');
+check('staff typing /admin/products is sent back to Orders', true);
+await page.getByRole('navigation', { name: 'Admin' }).getByRole('link', { name: 'Inventory' }).click();
+await page.getByRole('heading', { name: 'Stock levels' }).waitFor();
+await page.getByRole('button', { name: 'Adjust' }).first().waitFor();
+check('staff can see stock levels', (await page.getByRole('button', { name: 'Adjust' }).count()) > 0);
+await page.reload(); await page.getByRole('heading', { name: 'Stock levels' }).waitFor();
+check('session survives a page reload (refresh cookie)', true);
+await b.close(); process.exit(failed ? 1 : 0);

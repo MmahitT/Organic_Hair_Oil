@@ -1,0 +1,46 @@
+import type { Lang } from './copy';
+
+export interface OrdersCopy {
+  track: {
+    title: string; heading: string; intro: string; orderNo: string; orderNoHint: string; phone: string; phoneHint: string; find: string; finding: string; notFound: string; rateLimited: string; network: string; footerLink: string;
+    statusTitle: string; timeline: string; courier: string; trackingNo: string; items: string; total: string; deliverTo: string; invoice: string; another: string; whatsapp: string; waMessage: string;
+    statuses: Record<string, string>;
+    cancel: { button: string; title: string; reason: string; reasonHint: string; send: string; sending: string; done: string; pending: string; error: string; rejected: string };
+    ret: { button: string; title: string; reason: string; send: string; done: string; requested: string; approved: string; rejected: string; completed: string; error: string };
+    review: { title: string; intro: string; rating: string; comment: string; commentHint: string; send: string; sending: string; done: string; pendingNote: string; exists: string; error: string; ratingNeeded: string; commentNeeded: string; stars: string };
+  };
+  reviews: { summary: string; verified: string; reply: string; loadError: string; retry: string };
+  orderPage: { trackOrder: string; invoice: string };
+  contact: { footerLink: string; title: string; intro: string; name: string; phone: string; phoneHint: string; email: string; message: string; messageHint: string; send: string; sending: string; done: string; doneText: string; error: string; rateLimited: string; needReply: string; another: string; back: string };
+}
+
+export const ordersCopy: Record<Lang, OrdersCopy> = {
+  en: {
+    track: {
+      title: 'Track your order', heading: 'Track your order', intro: 'Enter your order number and the phone number you used when ordering.', orderNo: 'Order number', orderNoHint: 'e.g. HO-261111-ABCDE', phone: 'Mobile number', phoneHint: 'The number you gave when ordering.', find: 'Track order', finding: 'Looking…',
+      notFound: 'We could not find an order with those details. Please check the order number and phone number.', rateLimited: 'Too many attempts. Please wait a minute and try again.', network: 'We could not reach the server. Please check your connection and try again.', footerLink: 'Track order',
+      statusTitle: 'Order status', timeline: 'Progress', courier: 'Courier', trackingNo: 'Tracking no.', items: 'Items', total: 'Total', deliverTo: 'Delivering to', invoice: 'View invoice', another: 'Track another order', whatsapp: 'Message us on WhatsApp', waMessage: 'Hello! I have a question about my order {orderNo}.',
+      statuses: { pending: 'Order received', confirmed: 'Confirmed', processing: 'Being prepared', shipped: 'Shipped', out_for_delivery: 'Out for delivery', delivered: 'Delivered', cancelled: 'Cancelled', returned: 'Returned' },
+      cancel: { button: 'Cancel this order', title: 'Cancel your order', reason: 'Reason', reasonHint: 'Tell us briefly why you want to cancel.', send: 'Send cancellation request', sending: 'Sending…', done: 'Your cancellation request was sent. We will confirm on WhatsApp.', pending: 'Cancellation requested — we will confirm shortly.', error: 'Could not send the request. Please try again or message us on WhatsApp.', rejected: 'Your cancellation request could not be accepted.' },
+      ret: { button: 'Request a return', title: 'Return request', reason: 'Reason', send: 'Send return request', done: 'Your return request was sent. We will contact you on WhatsApp.', requested: 'Return requested — we will contact you.', approved: 'Return approved — we will arrange pickup.', rejected: 'Your return request could not be accepted.', completed: 'Return completed.', error: 'Could not send the request. Please try again or message us on WhatsApp.' },
+      review: { title: 'Review your purchase', intro: 'Thank you for ordering! Tell others what you think. Reviews appear after our team approves them.', rating: 'Your rating', comment: 'Your review', commentHint: 'What did you like or dislike?', send: 'Submit review', sending: 'Sending…', done: 'Thank you! Your review was received.', pendingNote: 'It will appear on the site after our team approves it.', exists: 'You already reviewed this product.', error: 'Could not send your review. Please try again.', ratingNeeded: 'Please choose a rating.', commentNeeded: 'Please write a few words (at least 5 characters).', stars: '{n} out of 5' },
+    },
+    reviews: { summary: '{avg} out of 5 · {count} reviews', verified: 'Verified purchase', reply: 'Reply from the shop', loadError: 'Reviews could not be loaded.', retry: 'Try again' },
+    orderPage: { trackOrder: 'Track this order', invoice: 'View invoice' },
+    contact: { footerLink: 'Contact us', title: 'Contact us', intro: 'Questions about our products or your order? Write to us and we will reply on the number or email you give.', name: 'Your name', phone: 'Mobile number', phoneHint: 'We will reply here (or on WhatsApp).', email: 'Email (optional)', message: 'Your message', messageHint: 'How can we help?', send: 'Send message', sending: 'Sending…', done: 'Thank you!', doneText: 'We received your message and will get back to you soon.', error: 'We could not send your message. Please try again, or message us on WhatsApp.', rateLimited: 'Too many messages. Please wait a minute and try again.', needReply: 'Please add a phone number or an email so we can reply.', another: 'Send another message', back: '← Back to shop' },
+  },
+  bn: {
+    track: {
+      title: 'অর্ডার ট্র্যাক করুন', heading: 'আপনার অর্ডার ট্র্যাক করুন', intro: 'অর্ডার নম্বর এবং অর্ডারের সময় দেওয়া ফোন নম্বরটি লিখুন।', orderNo: 'অর্ডার নম্বর', orderNoHint: 'যেমন HO-261111-ABCDE', phone: 'মোবাইল নম্বর', phoneHint: 'অর্ডারের সময় যে নম্বর দিয়েছিলেন।', find: 'ট্র্যাক করুন', finding: 'খোঁজা হচ্ছে…',
+      notFound: 'এই তথ্য দিয়ে কোনো অর্ডার পাওয়া যায়নি। অর্ডার নম্বর ও ফোন নম্বর আবার দেখে নিন।', rateLimited: 'অনেকবার চেষ্টা হয়েছে। এক মিনিট পরে আবার চেষ্টা করুন।', network: 'সার্ভারের সাথে যোগাযোগ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।', footerLink: 'অর্ডার ট্র্যাক করুন',
+      statusTitle: 'অর্ডারের অবস্থা', timeline: 'অগ্রগতি', courier: 'কুরিয়ার', trackingNo: 'ট্র্যাকিং নম্বর', items: 'পণ্য', total: 'মোট', deliverTo: 'ডেলিভারি হবে', invoice: 'ইনভয়েস দেখুন', another: 'আরেকটি অর্ডার ট্র্যাক করুন', whatsapp: 'হোয়াটসঅ্যাপে মেসেজ করুন', waMessage: 'হ্যালো! আমার অর্ডার {orderNo} সম্পর্কে একটি প্রশ্ন আছে।',
+      statuses: { pending: 'অর্ডার গ্রহণ করা হয়েছে', confirmed: 'নিশ্চিত', processing: 'প্রস্তুত করা হচ্ছে', shipped: 'পাঠানো হয়েছে', out_for_delivery: 'ডেলিভারির পথে', delivered: 'ডেলিভারি হয়েছে', cancelled: 'বাতিল', returned: 'ফেরত' },
+      cancel: { button: 'অর্ডার বাতিল করুন', title: 'অর্ডার বাতিলের অনুরোধ', reason: 'কারণ', reasonHint: 'সংক্ষেপে বাতিলের কারণ লিখুন।', send: 'বাতিলের অনুরোধ পাঠান', sending: 'পাঠানো হচ্ছে…', done: 'আপনার বাতিলের অনুরোধ পাঠানো হয়েছে। আমরা হোয়াটসঅ্যাপে জানাব।', pending: 'বাতিলের অনুরোধ করা হয়েছে — শীঘ্রই জানানো হবে।', error: 'অনুরোধ পাঠানো যায়নি। আবার চেষ্টা করুন বা হোয়াটসঅ্যাপে মেসেজ করুন।', rejected: 'আপনার বাতিলের অনুরোধ গ্রহণ করা যায়নি।' },
+      ret: { button: 'ফেরতের অনুরোধ', title: 'ফেরতের অনুরোধ', reason: 'কারণ', send: 'ফেরতের অনুরোধ পাঠান', done: 'আপনার ফেরতের অনুরোধ পাঠানো হয়েছে। আমরা হোয়াটসঅ্যাপে যোগাযোগ করব।', requested: 'ফেরতের অনুরোধ করা হয়েছে — আমরা যোগাযোগ করব।', approved: 'ফেরত অনুমোদিত — আমরা পিকআপের ব্যবস্থা করব।', rejected: 'আপনার ফেরতের অনুরোধ গ্রহণ করা যায়নি।', completed: 'ফেরত সম্পন্ন হয়েছে।', error: 'অনুরোধ পাঠানো যায়নি। আবার চেষ্টা করুন বা হোয়াটসঅ্যাপে মেসেজ করুন।' },
+      review: { title: 'আপনার কেনা পণ্যের রিভিউ দিন', intro: 'অর্ডার করার জন্য ধন্যবাদ! অন্যদের জানান আপনার অভিজ্ঞতা। আমাদের টিম অনুমোদন করার পর রিভিউ সাইটে দেখা যাবে।', rating: 'আপনার রেটিং', comment: 'আপনার রিভিউ', commentHint: 'কী ভালো বা খারাপ লেগেছে?', send: 'রিভিউ জমা দিন', sending: 'পাঠানো হচ্ছে…', done: 'ধন্যবাদ! আপনার রিভিউ পেয়েছি।', pendingNote: 'আমাদের টিম অনুমোদন করলে এটি সাইটে দেখা যাবে।', exists: 'আপনি এই পণ্যের রিভিউ আগেই দিয়েছেন।', error: 'রিভিউ পাঠানো যায়নি। আবার চেষ্টা করুন।', ratingNeeded: 'অনুগ্রহ করে একটি রেটিং বেছে নিন।', commentNeeded: 'অনুগ্রহ করে কয়েকটি শব্দ লিখুন (কমপক্ষে ৫ অক্ষর)।', stars: '৫ এর মধ্যে {n}' },
+    },
+    reviews: { summary: '৫ এর মধ্যে {avg} · {count}টি রিভিউ', verified: 'যাচাইকৃত ক্রেতা', reply: 'দোকানের উত্তর', loadError: 'রিভিউ লোড করা যায়নি।', retry: 'আবার চেষ্টা করুন' },
+    orderPage: { trackOrder: 'এই অর্ডার ট্র্যাক করুন', invoice: 'ইনভয়েস দেখুন' },
+    contact: { footerLink: 'যোগাযোগ করুন', title: 'যোগাযোগ করুন', intro: 'আমাদের পণ্য বা আপনার অর্ডার নিয়ে প্রশ্ন আছে? লিখুন — আপনার দেওয়া নম্বর বা ইমেইলে আমরা উত্তর দেব।', name: 'আপনার নাম', phone: 'মোবাইল নম্বর', phoneHint: 'এই নম্বরে (বা হোয়াটসঅ্যাপে) আমরা উত্তর দেব।', email: 'ইমেইল (ঐচ্ছিক)', message: 'আপনার বার্তা', messageHint: 'কীভাবে সাহায্য করতে পারি?', send: 'বার্তা পাঠান', sending: 'পাঠানো হচ্ছে…', done: 'ধন্যবাদ!', doneText: 'আপনার বার্তা পেয়েছি, শীঘ্রই উত্তর দেব।', error: 'বার্তা পাঠানো যায়নি। আবার চেষ্টা করুন বা হোয়াটসঅ্যাপে মেসেজ করুন।', rateLimited: 'অনেকগুলো বার্তা পাঠানো হয়েছে। এক মিনিট পরে আবার চেষ্টা করুন।', needReply: 'উত্তর দিতে একটি ফোন নম্বর বা ইমেইল দিন।', another: 'আরেকটি বার্তা পাঠান', back: '← দোকানে ফিরুন' },
+  },
+};
