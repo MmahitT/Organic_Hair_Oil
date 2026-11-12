@@ -1,12 +1,12 @@
 # DEVELOPMENT_PROGRESS.md
 
-_Last updated: 2026-11-11 (Phase 10)_
+_Last updated: 2026-11-12 (Phase 11)_
 
 ## Current Phase
-**Phase 11 — Deployment: in progress (started 2026-11-12), NOT complete.** Code/config done and pushed (Vercel: website + API function, `vercel.json`, daily cron, CI workflow, smoke test, `DEPLOY.md`, `RUNBOOK.md`). Blocked on owner actions: Atlas database, Vercel environment variables, first seed, a Ready deployment (the live URL still returns Vercel 500 `MIDDLEWARE_INVOCATION_FAILED`; first build failed because Vercel auto-detected Express — fixed with `"framework": null`, new build result not yet seen). Previous: Phase 10 verified.
+**Phase 11 — Deployment: in progress (started 2026-11-12), NOT complete.** Owner chose one Vercel project for storefront + API. Created and linked Vercel project `beauty-organic-store` (root directory `.`); local `npm run build` passes. Vercel currently has no environment variables configured, and no production deployment has been made. Blocked on owner setup: Atlas replica-set database, required Production environment variables, production seed, then deploy and run the read-only smoke test. Previous: Phase 10 verified.
 
 (Phase 10 text follows.)
-**Phase 10 — Testing & security: implemented and verified; awaiting owner review/approval.** Phase 11 (deployment) has not been started. See `SECURITY_REVIEW.md` (Spec §14 item by item) and `TESTING.md` (Spec §17 map, commands, results).
+**Phase 10 — Testing & security: implemented and verified; awaiting owner review/approval.** See `SECURITY_REVIEW.md` (Spec §14 item by item) and `TESTING.md` (Spec §17 map, commands, results).
 
 ## Completed (verified)
 **Phase 1 (setup)**
@@ -85,7 +85,7 @@ _Last updated: 2026-11-11 (Phase 10)_
 - Dependencies: Vitest 3 → 4.1.12 (fixes a critical dev-only `tinypool` RCE advisory), `sharp` → 0.35.5 (high, dev-only). `npm audit`: **0 critical / 0 high**, 7 moderate (one nested dev-only `minimatch`, see SECURITY_REVIEW.md §2); production dependencies 0.
 
 ## In progress / Pending
-- Phase 11 (deployment) — not started. Deployment items from the security review: host sends `client/dist/_headers`, HTTPS/HSTS, `TRUST_PROXY`, same registrable domain for site + API, shared rate-limit store if more than one API instance, Atlas network restriction, backups, secret manager.
+- Phase 11 (deployment) — in progress. One Vercel project is linked; remaining: Atlas database, Production environment variables, first seed, production deployment, and smoke test. Security follow-ups: confirm `TRUST_PROXY` behavior, Atlas network restriction/backups, and a shared rate-limit store before significant traffic.
 - **Performance target not met:** Lighthouse mobile LCP 6.0 s (target < 2.5 s). Cause: page shows a splash until the shop data arrives and then React renders the hero. Plan: render the shell/hero immediately with skeletons, lazy-load below-the-fold sections, smaller entry bundle. Decide whether to do this before launch.
 - **To finish SEO at launch:** owner sets the real domain (`VITE_SITE_URL` at build → canonical, sitemap), enters GA4/Meta Pixel IDs (optional), writes/approves the four legal pages (legal review recommended), and confirms the share image.
 - Still code-only (English/Bangla copy files, not editable in admin): hero, benefits, how-to-use, ingredient card text, trust points, gallery, offers copy. Ask the owner whether editing these is needed before launch.
@@ -171,13 +171,14 @@ The gateway tests/e2e from Phase 6 were deleted with the code (2026-11-11). Thei
 - Lighthouse (landing, mobile): SEO 100, Accessibility 100, Best Practices 100, Performance 77.
 
 ## Deployment Status
-Not deployed. No production services configured.
+Vercel project `beauty-organic-store` created and linked; Production environment-variable list is empty. No production deployment or Atlas database is configured yet. Root `npm run build` passed on 2026-11-12; output included existing Vite chunk-size and Zod annotation warnings.
 
 ## Open Questions (owner)
 See PROJECT_SPECIFICATION.md §22. Still needed: ingredient lists, business email/address, original logo file, whether the "100% organic" claim and the label model photo may be used, current packaging version, whether comb can be sold alone, combo end date/limit.
 
 ## Decisions Log
 - 2026-11-12 (Phase 11): single Vercel project serves the website and the API (serverless function, same domain → no CORS/cookie issues) instead of a separate Render/Railway server — chosen by the owner ("deploy on vercel"). Trade-offs documented in `DEPLOY.md` (per-instance rate limits, daily cron on free plan, cold starts). Free Atlas M0 has no backups → owner approval needed for M10+ or manual dumps (`RUNBOOK.md`).
+- 2026-11-12 (deployment setup): owner resolved the conflicting docs in favor of one Vercel project. Created and linked `beauty-organic-store`; `DEPLOY.md` now documents the root project configuration and required variables. Existing local `.gitignore` change was preserved.
 - 2026-11-11 (owner request): delivery zones are now **Inside Rangpur ৳60 / Outside Rangpur ৳120** (replacing Dhaka; zone keys `inside_rangpur`/`outside_rangpur`; the live dev database was updated, owner can still edit in Admin → Website). Combo ৳999 with free delivery all over Bangladesh (unchanged). Landing page gained an **order section** (`#order`): pick products, then fill the same checkout form on the page and place the order (COD / manual payments), with server-side pricing. The form was extracted to `components/shop/CheckoutForm.tsx` and is shared with `/checkout`. Test: `scripts/e2e-inline-order.mjs`.
 - 2026-11-11 (Phase 10): website CSP forbids inline script and eval (styles allow inline because React sets style attributes); Zod JIT disabled app-wide; access/error logs scrub phones, emails, tokens and JWTs; every API response is `no-store` unless a route sets its own short cache; production boot refuses unsafe config; test runner uses its own API port; vitest pinned to `src/**/*.test.*` (v4 no longer ignores `dist`) and tests are excluded from the production server build; `sharp`/`vitest` upgraded for audit; residual moderate `minimatch` (dev-only) accepted.
 - 2026-11-11 (Phase 9): no prerender dependency (baseline static tags + client-side meta/JSON-LD; revisit at deployment); policies are drafts until the owner confirms; policies shown in English only; cookie banner appears only when tracking IDs exist; `purchase` = customer views an accepted order (WhatsApp-confirmation workflow) — server-side Conversions API deferred (needs token/approval); gtag shim is a separate same-origin file (lint forbids `arguments`; also CSP-friendly).

@@ -1,60 +1,68 @@
-# Deploying to Vercel — two projects from one repository
+# Deploying to Vercel — one project
 
-The repository holds two independent apps. Each is its own Vercel project with its own settings and variables:
+The single Vercel project serves both the React storefront and the Express API on the same origin. The repository root is the Vercel Root Directory (`.`); root `vercel.json` builds the workspaces, publishes `dist/`, routes `/api/*` to the serverless handler, applies security headers, and schedules the daily jobs. The local repository root is linked to Vercel project `beauty-organic-store`; Git-based automatic deploys are not configured by that local link.
 
-| Project | Root Directory | Config | What it is |
-|---|---|---|---|
-| **API** (create first) | `server` | `server/vercel.json`, `server/api/index.mjs` | Express REST API as one serverless function, plus the daily jobs cron |
-| **Website** | `client` | `client/vercel.json` | React/Vite static site |
+## 1. Set up MongoDB Atlas
 
-**How they connect:** the website project forwards every `/api/*` request to the API project (a rewrite in `client/vercel.json`). The browser only ever sees the website's address, so login cookies stay first-party and no cross-site CORS or cookie changes are needed.
+Create an Atlas replica-set cluster and a database user with a strong password and read/write access only to the application database. Vercel Hobby functions use changing outbound IPs, so Atlas may require `0.0.0.0/0`; use a unique strong database password and TLS. Free M0 does not include backups; review `RUNBOOK.md` before storing live orders.
 
-## 1. MongoDB Atlas (free tier is enough to start)
-Create a cluster, a **database user with a strong password** (least privilege: read/write on one database), and allow network access (Vercel uses changing IPs, so Atlas "0.0.0.0/0" is needed — rely on the strong password and TLS). Copy the connection string (`mongodb+srv://…`). Atlas is a replica set, which the order transactions require.
+## 2. Configure the Vercel project
 
-## 2. API project (Vercel → Add New → Project → this repo → Root Directory `server`)
-Framework Preset: **Other**. Leave Build/Install/Output at their defaults (they come from `server/vercel.json`). Also keep "Include source files outside of the Root Directory" **on** (default).
-
-Environment variables (Production). Never commit these. Generate secrets with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` (a different one for each).
+In Vercel → `beauty-organic-store` → Settings → Environment Variables, add the following to **Production**. Do not put secret values in the repository or in any `VITE_*` variable. Generate different JWT values with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` and enter them directly in Vercel.
 
 | Name | Value |
 |---|---|
 | `NODE_ENV` | `production` |
-| `MONGODB_URI` | the Atlas connection string |
+| `MONGODB_URI` | Atlas connection string (`mongodb+srv://...`) |
 | `MONGODB_DB_NAME` | `beauty_organic` |
-| `JWT_ACCESS_SECRET` | random, 48+ chars |
-| `JWT_REFRESH_SECRET` | a *different* random value |
-| `FRONTEND_URL` | the **website** address, `https://<website-domain>` |
-| `BACKEND_URL` | the website address too (browsers reach the API through it) |
-| `CORS_ORIGINS` | `https://<website-domain>` only |
+| `JWT_ACCESS_SECRET` | Random value, at least 32 characters |
+| `JWT_REFRESH_SECRET` | A different random value, at least 32 characters |
+| `FRONTEND_URL` | The assigned HTTPS site origin |
+| `BACKEND_URL` | The same site origin |
+| `CORS_ORIGINS` | The same site origin only |
 | `COOKIE_SECURE` | `true` |
+| `COOKIE_SAMESITE` | `lax` |
 | `TRUST_PROXY` | `true` |
-| `CRON_SECRET` | random; Vercel Cron sends it as a Bearer token |
-| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | only to create the first owner (12+ chars); remove afterwards |
-| `CLOUDINARY_*` | optional, when you have an account |
+| `BCRYPT_SALT_ROUNDS` | `12` |
+| `CRON_SECRET` | A separate random secret; Vercel Cron sends it as a Bearer token |
+| `VITE_SITE_URL` | The site origin; used at build time for canonical URLs and sitemap |
 
-Deploy it, then note its address (for example `https://hair-oil-api.vercel.app`). Check `https://<api-address>/api/v1/health` returns JSON.
+Optional: `VITE_GA4_MEASUREMENT_ID` and `VITE_META_PIXEL_ID` are public analytics IDs and only enable tracking after consent. Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` only when Cloudinary is configured. Do not add `SEED_ADMIN_*` to Vercel; provide those only to the one-time local seed command.
 
-## 3. Website project (Add New → Project → same repo → Root Directory `client`)
-Framework Preset: **Vite**. Before deploying, edit `client/vercel.json`: replace `REPLACE-WITH-API-PROJECT.vercel.app` in the first rewrite with the API address from step 2 (host only), commit and push.
+Set the project Root Directory to `.`, Framework Preset to **Other**, and leave the commands controlled by root `vercel.json` (`npm install --include=dev`, `npm run build`, output `dist`). The project must include files from the repository root; do not set the Root Directory to `client` or `server`.
 
-Environment variables (Production, public values only): `VITE_SITE_URL` = `https://<website-domain>`; optional analytics IDs. **Do not** set `VITE_API_BASE_URL` (the site calls `/api/v1`, which the rewrite forwards). Never put a secret in a `VITE_*` variable.
+After Atlas and all required Production variables are configured, deploy from the repository root:
 
-## 4. First data (run once from your computer, never from Vercel)
-Put the Atlas values in a **temporary** shell environment (not a file in the repo), then:
-`npm run seed -w server -- --allow-production` creates the products, delivery zones and the owner account. Then sign in at `/admin`, change the password, set real stock (Admin → Inventory), prices, payments and contact details.
+```sh
+npx vercel deploy --prod
+```
 
-## 5. Check it
-- `https://<website-domain>/api/v1/health`, `/api/v1/products`, `/api/v1/delivery/zones` return JSON (proves the forward works).
-- `node scripts/smoke-production.mjs https://<website-domain>`.
-- The home page lists the products; a test order can be placed; it appears in Admin → Orders; admin sign-in survives a page refresh.
-- If Vercel "Deployment Protection" is on, visitors must sign in to Vercel — turn it off for Production on **both** projects.
+Use the production domain assigned by Vercel consistently for `FRONTEND_URL`, `BACKEND_URL`, `CORS_ORIGINS`, and `VITE_SITE_URL`. If changing it later, update those values and redeploy.
 
-## Known limits on Vercel
-- Rate limits are counted per function instance (in memory), so they are weaker than on a single server. Move them to a shared store before heavy traffic. Because requests arrive through the website's forward, check the client IP the API sees (`TRUST_PROXY=true`) after deploy.
-- The payment-expiry/notification jobs run from a **daily** Vercel Cron on the API project (free plan: once a day); unpaid prepaid orders release their stock at the next run.
-- A cold start adds about a second to the first request.
-- Your own domain with an `api.` subdomain is possible later but then cookies need cross-subdomain settings; keep the forward unless you decide to change.
+## 3. Seed and configure the store
 
-## Local development and tests
-Unchanged: `npm run dev` from the repo root starts both; the website proxies `/api` to the API on port 5001. The root `vercel.json`, `api/` and `scripts/copy-dist.mjs` belong to the old one-project setup and are kept only until the owner approves removing them.
+Run the idempotent seed once from a local terminal pointed at the production Atlas database. Make the full required Production configuration above available to the local seed process, plus `SEED_ADMIN_EMAIL` and a strong `SEED_ADMIN_PASSWORD` (12+ characters). Keep these temporary and out of committed files; do not put production secrets in `.env.local` for this step. Then run:
+
+```sh
+npm run seed -w server -- --allow-production
+```
+
+Remove the temporary seed credentials, sign in at `/admin`, change the owner password, enter real stock, publish products, and configure payment details, contact information, and policies. Seeded products are drafts with zero stock until the owner updates them.
+
+## 4. Verify
+
+- `https://<site-domain>/api/v1/health` reports the database as up.
+- `node scripts/smoke-production.mjs https://<site-domain>` passes. This smoke test is read-only and does not place an order.
+- Confirm the storefront, admin login, and API routes on the assigned production domain.
+- Disable Vercel Deployment Protection for Production if public visitors are asked to sign in to Vercel.
+
+## Known limits
+
+- Rate limits are in memory per serverless function instance, not shared across instances. Move them to a shared store before significant traffic.
+- The payment-expiry and notification jobs run from a daily Vercel Cron on Hobby; expired prepaid stock may remain held until that run.
+- Cold starts add latency to the first API request.
+- `TRUST_PROXY=true` is required behind Vercel. Review production logs and rate-limit behavior after launch.
+
+## Local development
+
+`npm run dev` from the repository root starts both workspaces; the Vite development server proxies `/api` to the API on port 5001.
